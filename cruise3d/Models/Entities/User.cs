@@ -16,9 +16,9 @@ namespace cruise3d.Models.Entities
         public DateTime UpdatedAt { get; set; }
 
         // Navigation properties — EF Core uses these to do JOINs
-        public ICollection<Address> Addresses { get; set; } = [];
-        public ICollection<Order> Orders { get; set; } = [];
-        public ICollection<Cart> Carts { get; set; } = [];
-        public ICollection<Review> Reviews { get; set; } = [];
+        public ICollection<Address> Addresses { get; set; } = new List<Address>();
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

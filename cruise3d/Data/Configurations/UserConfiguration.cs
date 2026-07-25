@@ -21,39 +21,48 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         entity.HasKey(u => u.Id);
 
         entity.Property(u => u.Id)
-              .HasDefaultValueSql("gen_random_uuid()");
+              .HasDefaultValueSql("gen_random_uuid()")
+              .HasColumnName("id");
 
         entity.Property(u => u.Name)
               .IsRequired()
-              .HasMaxLength(100);
+              .HasMaxLength(100)
+              .HasColumnName("name");
 
         entity.Property(u => u.Email)
               .IsRequired()
-              .HasMaxLength(255);
+              .HasMaxLength(255)
+              .HasColumnName("email");
 
         entity.HasIndex(u => u.Email)
               .IsUnique();
 
         entity.Property(u => u.PasswordHash)
               .IsRequired()
-              .HasMaxLength(255);
+              .HasMaxLength(255)
+              .HasColumnName("password_hash");
 
         entity.Property(u => u.Role)
               .IsRequired()
               .HasMaxLength(20)
-              .HasDefaultValue("customer");
+              .HasDefaultValue("customer")
+              .HasColumnName("role");
 
         entity.Property(u => u.Phone)
-              .HasMaxLength(20);
+              .HasMaxLength(20)
+              .HasColumnName("phone");
 
         entity.Property(u => u.IsActive)
-              .HasDefaultValue(true);
+              .HasDefaultValue(true)
+              .HasColumnName("is_active");
 
         entity.Property(u => u.CreatedAt)
-              .HasDefaultValueSql("NOW()");
+              .HasDefaultValueSql("NOW()")
+              .HasColumnName("created_at");
 
         entity.Property(u => u.UpdatedAt)
-              .HasDefaultValueSql("NOW()");
+              .HasDefaultValueSql("NOW()")
+              .HasColumnName("updated_at");
 
         // Seed admin user
         entity.HasData(new User

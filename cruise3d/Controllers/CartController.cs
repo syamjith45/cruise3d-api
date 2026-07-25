@@ -1,21 +1,76 @@
+using cruise3d.API.Helpers;
+using cruise3d.API.Models.DTOs.Cart;
+using cruise3d.API.Models.DTOs.Common;
+using cruise3d.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace cruise3d.Controllers
+namespace cruise3d.API.Controllers;
+
+[ApiController]
+[Route("api/cart")]
+[Authorize(Roles = "customer")]   // entire controller — customers only
+public class CartController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class CartController : ControllerBase
+    private readonly ICartService _cart;
+
+    public CartController(ICartService cart)
+        => _cart = cart;
+
+    // GET api/cart
+    // Get logged-in customer's cart
+    [HttpGet]
+    public async Task<IActionResult> GetCart()
     {
-        [HttpGet]
-        public IActionResult GetCart() => Ok(new { items = new object[0] });
+        var userId = JwtHelper.GetUserId(User);
+        var result = await _cart.GetCartAsync(userId);
+        return Ok(ApiResponse<CartResponseDto>.Ok(result));
+    }
 
-        [HttpPost("items")]
-        public IActionResult AddItem([FromBody] object model) => Ok(new { message = "Not implemented" });
+    // POST api/cart
+    // Add item to cart
+    [HttpPost]
+    public async Task<IActionResult> AddToCart([FromBody] AddToCartDto dto)
+    {
+        var userId = JwtHelper.GetUserId(User);
+        var result = await _cart.AddToCartAsync(userId, dto);
+        return Ok(ApiResponse<CartResponseDto>.Ok(result, "Item added to cart."));
+    }
 
-        [HttpPut("items/{id}")]
-        public IActionResult UpdateItem(int id, [FromBody] object model) => NoContent();
+    // PUT api/cart/{cartId}
+    // Update quantity of a cart item
+    [HttpPut("{cartId}")]
+    public async Task<IActionResult> UpdateQuantity(
+        Guid cartId, [FromBody] UpdateQuantityDto dto)
+    {
+        var userId = JwtHelper.GetUserId(User);
+        var result = await _cart.UpdateQuantityAsync(userId, cartId, dto.Quantity);
+        return Ok(ApiResponse<CartResponseDto>.Ok(result, "Cart updated."));
+    }
 
-        [HttpDelete("items/{id}")]
-        public IActionResult RemoveItem(int id) => NoContent();
+    // DELETE api/cart/{cartId}
+    // Remove a specific item from cart
+    [HttpDelete("{cartId}")]
+    public async Task<IActionResult> RemoveItem(Guid cartId)
+    {
+        var userId = JwtHelper.GetUserId(User);
+        var result = await _cart.RemoveItemAsync(userId, cartId);
+        return Ok(ApiResponse<CartResponseDto>.Ok(result, "Item removed from cart."));
+    }
+
+    // DELETE api/cart
+    // Clear entire cart
+    [HttpDelete]
+    public async Task<IActionResult> ClearCart()
+    {
+        var userId = JwtHelper.GetUserId(User);
+        await _cart.ClearCartAsync(userId);
+        return Ok(ApiResponse<string>.Ok("Cart cleared."));
     }
 }
+
+public class UpdateQuantityDto
+{
+    public int Quantity { get; set; }
+}
+

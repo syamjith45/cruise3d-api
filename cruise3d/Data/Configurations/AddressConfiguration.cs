@@ -16,28 +16,36 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
 
         entity.Property(a => a.Id)
               .HasDefaultValueSql("gen_random_uuid()");
+        entity.Property(a => a.Id)
+              .HasColumnName("id");
 
         entity.Property(a => a.FullName)
               .IsRequired()
-              .HasMaxLength(100);
+              .HasMaxLength(100)
+              .HasColumnName("full_name");
 
         entity.Property(a => a.AddressLine)
-              .IsRequired();
+              .IsRequired()
+              .HasColumnName("address_line");
 
         entity.Property(a => a.City)
               .IsRequired()
-              .HasMaxLength(100);
+              .HasMaxLength(100)
+              .HasColumnName("city");
 
         entity.Property(a => a.State)
               .IsRequired()
-              .HasMaxLength(100);
+              .HasMaxLength(100)
+              .HasColumnName("state");
 
         entity.Property(a => a.Pincode)
               .IsRequired()
-              .HasMaxLength(10);
+              .HasMaxLength(10)
+              .HasColumnName("pincode");
 
         entity.Property(a => a.IsDefault)
-              .HasDefaultValue(false);
+              .HasDefaultValue(false)
+              .HasColumnName("is_default");
 
         // one User → many Addresses
         // if user deleted → addresses deleted too
