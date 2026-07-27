@@ -103,11 +103,16 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Role,           user.Role)
         };
 
-        var key   = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        var jwtKey = _config["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(jwtKey))
+            throw new InvalidOperationException("JWT Key is not configured. Set 'Jwt:Key' in configuration.");
+
+        var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiry = DateTime.UtcNow.AddMinutes(
-                        int.Parse(_config["Jwt:ExpiryMinutes"]!));
+
+        // Read expiry minutes with a safe default when configuration is missing or invalid
+        var expiryMinutes = _config.GetValue<int?>("Jwt:ExpiryMinutes") ?? 60; // default 60 minutes
+        var expiry = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
         var token = new JwtSecurityToken(
             issuer:             _config["Jwt:Issuer"],

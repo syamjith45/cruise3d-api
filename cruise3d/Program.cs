@@ -65,6 +65,42 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Apply EF Core migrations automatically on startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = services.GetRequiredService<AppDbContext>();
+        try
+        {
+            db.Database.Migrate();
+        }
+        catch (InvalidOperationException ex)
+        {
+            // EF reports an InvalidOperationException when there are model changes with no migrations.
+            // Fallback for development: create DB schema if migrations are missing to avoid blocking startup.
+            // Recommended: generate and commit migrations instead of using EnsureCreated.
+            var msg = ex.Message ?? string.Empty;
+            if (msg.ToLowerInvariant().Contains("pending") || msg.Contains("PendingModelChangesWarning"))
+            {
+                logger.LogWarning(ex, "Pending EF model changes detected. Falling back to EnsureCreated() in development. Add migrations and commit them to use Migrate().");
+                db.Database.EnsureCreated();
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+        throw;
+    }
+}
+
 // ─── MIDDLEWARE PIPELINE ──────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
