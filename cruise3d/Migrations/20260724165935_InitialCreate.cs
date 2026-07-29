@@ -11,6 +11,8 @@ namespace cruise3d.API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Ensure pgcrypto extension is available for gen_random_uuid()
+            migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";");
             migrationBuilder.CreateTable(
                 name: "categories",
                 columns: table => new
